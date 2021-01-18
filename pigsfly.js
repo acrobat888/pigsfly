@@ -9,8 +9,8 @@
 window.onload = function() {
 
     // Get the canvas and the context
-    var cvs: HTMLCanvasElement = document.getElementById("canvas") as HTMLCanvasElement;
-    var ctx: CanvasRenderingContext2D = cvs.getContext("2d");
+    var cvs = document.getElementById("canvas");
+    var ctx = cvs.getContext("2d");
 
     // load images
     var bird = new Image(38,26);
@@ -100,7 +100,7 @@ window.onload = function() {
         }
     }
 
-    var pipe: Array<PipePoint> = [];
+    var pipe = [];
 
     pipe[0] = {
         x : cvs.width / 2,
