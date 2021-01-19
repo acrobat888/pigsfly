@@ -39,6 +39,8 @@ window.onload = function() {
     var score = 0;
     var level = 1;
 
+    var pauseGame = false;
+
     // audio files
 
     var fly = new Audio();
@@ -75,14 +77,21 @@ window.onload = function() {
 
     function direction(event){
         let key = event.keyCode;
-        if( key == 37){
-            moveLeft();
-        }else if(key == 38){
-            moveUp();
-        }else if(key == 39){
-            moveRight();
-        }else if(key == 40){
-            moveDown();
+
+        if (key == 32) {                // space key
+            pauseGame = !pauseGame;
+        } else {
+            if (!pauseGame){
+                if( key == 37){           // left arrow
+                    moveLeft();
+                }else if(key == 38){            // up arrow
+                    moveUp();
+                }else if(key == 39){            // right arrow
+                    moveRight();
+                }else if(key == 40){            // down arrow
+                    moveDown();
+                }
+            }
         }
     }
 
@@ -114,54 +123,57 @@ window.onload = function() {
 
     // draw images
 
-    function draw(){
-        
-        for( var i = 0; i < cvs.width; i+= bg.width)
-            ctx.drawImage(bg,i,0);
-        
-        
-        for(var i = 0; i < pipe.length; i++){
+    function draw()
+    {    
+        if (!pauseGame)
+        {
+            for( var i = 0; i < cvs.width; i+= bg.width)
+                ctx.drawImage(bg,i,0);
             
-            constant = pipeNorth.height+gap;
-            ctx.drawImage(pipeNorth,pipe[i].x,pipe[i].y);
-            ctx.drawImage(pipeSouth,pipe[i].x,pipe[i].y+constant);
+            
+            for(var i = 0; i < pipe.length; i++){
                 
-            pipe[i].x--;
-            
-            if( pipe[i].x == (cvs.width / 2) ){     // was 125 -- NOTE -- need to make these dynamic on the window size...
-                pipe.push({
-                    x : cvs.width,
-                    y : Math.floor(Math.random()*pipeNorth.height)-pipeNorth.height
-                }); 
-            }
+                constant = pipeNorth.height+gap;
+                ctx.drawImage(pipeNorth,pipe[i].x,pipe[i].y);
+                ctx.drawImage(pipeSouth,pipe[i].x,pipe[i].y+constant);
+                    
+                pipe[i].x--;
+                
+                if( pipe[i].x == (cvs.width / 2) ){     // was 125 -- NOTE -- need to make these dynamic on the window size...
+                    pipe.push({
+                        x : cvs.width,
+                        y : Math.floor(Math.random()*pipeNorth.height)-pipeNorth.height
+                    }); 
+                }
 
-            // detect collision
-            
-            if( bX + bird.width >= pipe[i].x && bX <= pipe[i].x + pipeNorth.width && (bY <= pipe[i].y + pipeNorth.height || bY+bird.height >= pipe[i].y+constant) || bY + bird.height >=  cvs.height - fg.height){
-                location.reload(); // reload the page
-            }
-            
-            if(pipe[i].x == 5){
-                score++;
-                scor.play();
+                // detect collision
                 
-                if (score > 5){
-                    score = 0;
-                    level++;
+                if( bX + bird.width >= pipe[i].x && bX <= pipe[i].x + pipeNorth.width && (bY <= pipe[i].y + pipeNorth.height || bY+bird.height >= pipe[i].y+constant) || bY + bird.height >=  cvs.height - fg.height){
+                    location.reload(); // reload the page
+                }
+                
+                if(pipe[i].x == 5){
+                    score++;
+                    scor.play();
+                    
+                    if (score > 5){
+                        score = 0;
+                        level++;
+                    }
                 }
             }
-        }
 
-        if (pipe[0].x < -pipeNorth.width)
-            pipe.shift();
+            if (pipe[0].x < -pipeNorth.width)
+                pipe.shift();
 
-        for( var i = 0; i < cvs.width; i += fg.width )
-            ctx.drawImage(fg,i,cvs.height - fg.height);
-        
-        ctx.drawImage(bird,bX,bY);
-        
-        bY += gravity;
-        
+            for( var i = 0; i < cvs.width; i += fg.width )
+                ctx.drawImage(fg,i,cvs.height - fg.height);
+            
+            ctx.drawImage(bird,bX,bY);
+            
+            bY += gravity;
+        }   // if (!pauseGame)
+
         ctx.fillStyle = "#000";
         ctx.font = "20px Verdana";
         ctx.fillText("Score : "+score,10,cvs.height-80);
