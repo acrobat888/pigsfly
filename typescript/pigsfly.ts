@@ -13,19 +13,112 @@ window.onload = function() {
     var ctx: CanvasRenderingContext2D = cvs.getContext("2d");
 
     // load images
-    var bird = new Image(38,26);
-    var bg = new Image(288, 512);
-    var fg = new Image(306,118);
-    var pipeNorth = new Image(52,242);
-    var pipeSouth = new Image(52,378);
+    // ImageClass
+    class CImages
+    {
+        name: string = null;
+        file: string = null;
+        image: HTMLImageElement = null;
+        loaded: boolean = false;
 
-    bird.src = "images/bird.png";
-    bg.src = "images/bg.png";
-    fg.src = "images/fg.png";
-    pipeNorth.src = "images/pipeNorth.png";
-    pipeSouth.src = "images/pipeSouth.png";
+        constructor(inName: string, inFile: string)
+        {
+            this.name = inName;
+            this.file = inFile;
+        }
 
+    
+        load()
+        {
+            this.image = new Image();
 
+            // Add onload event handler
+            this.image.onload = function () {
+                    // Done loading
+                    // this.loaded = true;
+            };
+            
+            this.image.src = this.file;
+        }
+    }
+
+    var images: Array<HTMLImageElement> = [];
+    var bg: HTMLImageElement = null;
+    var bird: HTMLImageElement = null;
+    var fg: HTMLImageElement = null;
+    var pipeNorth: HTMLImageElement = null;
+    var pipeSouth: HTMLImageElement = null;
+
+    function loadIndividualImages() {
+        bird = new Image();
+        bird.src = "images/bird.png";     
+
+        bg = new Image();
+        bg.src = "images/bg.png";
+
+        fg = new Image();
+        fg.src = "images/fg.png";
+
+        pipeNorth = new Image();
+        pipeNorth.src = "images/pipeNorth.png";
+
+        pipeSouth = new Image();
+        pipeSouth.src = "images/pipeSouth.png";
+    }
+
+    // Image loading global variables
+    var loadcount = 0;
+    var loadtotal = 0;
+    var preloaded = false;
+    
+    var imageNames: Array<string> = [   "images/bird.png",
+                                        "images/bg.png",
+                                        "images/fg.png",
+                                        "images/pipeNorth.png",
+                                        "images/pipeSouth.png" ];
+    // Load images
+    function loadImages(imagefiles) {
+        // Initialize variables
+        loadcount = 0;
+        loadtotal = imagefiles.length;
+        preloaded = false;
+        
+        // Load the images
+        var loadedimages = [];
+        for (var i=0; i<imagefiles.length; i++) {
+            // Create the image object
+            var image = new Image();
+            
+            // Add onload event handler
+            image.onload = function (inEvent: Event) {
+                loadcount++;
+
+                // typecast to get to the src
+                var tgt: HTMLImageElement = (inEvent.target as HTMLImageElement);
+                var str = tgt.src;
+
+                console.log( tgt );
+
+                if (str.endsWith("images/bird.png"))
+                    console.log("Found a bird");
+
+                if (loadcount == loadtotal) {
+                    // Done loading
+                    preloaded = true;
+                }
+            };
+            
+            // Set the source url of the image
+            image.src = imagefiles[i];
+            
+            // Save to the image array
+            loadedimages[i] = image;
+        }
+        
+        // Return an array of images
+        return loadedimages;
+    }
+    
     // some variables
 
     var gap: number = 85;
@@ -47,7 +140,7 @@ window.onload = function() {
     var scor: HTMLAudioElement = new Audio();
 
     fly.src = "sounds/fly.mp3";
-    scor.src = "sounds/score.mp3";
+    scor.src = "sounds/vo_ben_whoopy_02.wav";   // "sounds/score.mp3";
 
     // on key down
 
@@ -125,7 +218,7 @@ window.onload = function() {
 
     function draw(){
         
-        if (!pauseGame)
+        if (!pauseGame && preloaded)
         {
             for( var i = 0; i < cvs.width; i+= bg.width)
                 ctx.drawImage(bg,i,0);
@@ -149,7 +242,9 @@ window.onload = function() {
 
                 // detect collision
                 
-                if( bX + bird.width >= pipe[i].x && bX <= pipe[i].x + pipeNorth.width && (bY <= pipe[i].y + pipeNorth.height || bY+bird.height >= pipe[i].y+constant) || bY + bird.height >=  cvs.height - fg.height){
+                var birdWidth = bird.width;
+
+                if( bX + birdWidth >= pipe[i].x && bX <= pipe[i].x + pipeNorth.width && (bY <= pipe[i].y + pipeNorth.height || bY+bird.height >= pipe[i].y+constant) || bY + bird.height >=  cvs.height - fg.height){
                     location.reload(); // reload the page
                 }
                 
@@ -181,6 +276,10 @@ window.onload = function() {
         requestAnimationFrame(draw);
 
     }
+
+    images = loadImages(imageNames);
+    
+    loadIndividualImages();
 
     draw();
 }
