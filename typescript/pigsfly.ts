@@ -14,31 +14,41 @@ window.onload = function() {
     // Get the canvas and the context
     var cvs: HTMLCanvasElement = document.getElementById("canvas") as HTMLCanvasElement;
     var ctx: CanvasRenderingContext2D = cvs.getContext("2d");
+    
+    interface ImageInfo {
+        id: number;
+        name: string;
+        fileName: string;
+        cimage: CImages;
+    };
 
-    var images: Array<HTMLImageElement> = [];
-    var cbird : CImages = null;
-    var cbg : CImages = null;
-    var cfg : CImages = null;
-    var cpipeNorth: CImages = null;
-    var cpipeSouth: CImages = null;
-    
-    var bg: HTMLImageElement = null;
-    var bird: HTMLImageElement = null;
-    var fg: HTMLImageElement = null;
-    var pipeNorth: HTMLImageElement = null;
-    var pipeSouth: HTMLImageElement = null;
-    
-    // Image loading global variables
-    var imageNames: Array<string> = [   "images/bird.png",
-                                        "images/bg.png",
-                                        "images/fg.png",
-                                        "images/pipeNorth.png",
-                                        "images/pipeSouth.png" ];
+    enum imageEnums {
+        kBIRD,
+        kFOREGROUND,
+        kBACKGROUND,
+        kPIPENORTH,
+        kPIPESOUTH,
+        kMAX_IMAGES
+    };
+
+    var imageInfoArray: Array<ImageInfo> = [
+        { id: imageEnums.kBIRD, name: "bird", fileName: "images/bird.png", cimage: null },
+        { id: imageEnums.kFOREGROUND, name: "fg", fileName: "images/fg.png", cimage: null  },
+        { id: imageEnums.kBACKGROUND, name: "bg", fileName: "images/bg.png", cimage: null  },
+        { id: imageEnums.kPIPENORTH, name: "pipeNorth", fileName: "images/pipeNorth.png", cimage: null  },
+        { id: imageEnums.kPIPESOUTH, name: "pipeSouth", fileName: "images/pipeSouth.png", cimage: null  }
+    ];
 
     var loadcount = 0;
-    var loadtotal = imageNames.length;
+    var loadtotal = imageInfoArray.length;
     var preloaded = false;
     
+    /* 
+     * checkLoaded()
+     *
+     * Checks to make sure that all the `onload` callbacks have been called so that
+     * we can ensure that resources are loaded.
+     */
     function checkLoaded()
     {
         loadcount++;
@@ -48,111 +58,27 @@ window.onload = function() {
             preloaded = true;
         }
     }
-
-    function loadIndividualImages() 
+   
+    /*
+     *  loadImages
+     *
+     * Function to load the images and setup the CImage object.
+     */
+    function loadImages()
     {
-        if (cbg == null)
+        for( var i = 0; i < imageInfoArray.length; i++)
         {
-            cbg = new CImages( "bg", "images/bg.png", checkLoaded)
-            if (cbg != null)
+            var tmpImage: CImages = new CImages( imageInfoArray[i].name, imageInfoArray[i].fileName,  checkLoaded)
+            if (tmpImage != null)
             {
-                cbg.load();
-                bg = cbg.getImage();
-            }
-        }
-                
-        if (cfg == null)
-        {
-            cfg = new CImages( "fg", "images/fg.png", checkLoaded)
-            if (cfg != null)
-            {
-                cfg.load();
-                fg = cfg.getImage();
-            } 
-        }
-
-        if (cbird == null)
-        {
-            cbird = new CImages( "bird", "images/bird.png", checkLoaded);
-            if (cbird != null)
-            {
-                cbird.load();
-                bird = cbird.getImage();
+                tmpImage.load();
+                imageInfoArray[ i ].cimage = tmpImage;
             }
         }
 
-        if (cpipeNorth == null)
-        {
-            cpipeNorth = new CImages( "pipeNorth", "images/pipeNorth.png", checkLoaded);
-            if(cpipeNorth != null)
-            {
-                cpipeNorth.load();
-                pipeNorth = cpipeNorth.getImage();
-            }
-        }
-
-        if (cpipeSouth == null)
-        {
-            cpipeSouth = new CImages( "pipeSouth", "images/pipeSouth.png", checkLoaded);
-            if(cpipeSouth != null)
-            {
-                cpipeSouth.load();
-                pipeSouth = cpipeSouth.getImage();
-            }
-        }
-
-            /*
-        bird = new Image();
-        bird.src = "images/bird.png";     
-
-        bg = new Image();
-        bg.src = "images/bg.png";
-
-        fg = new Image();
-        fg.src = "images/fg.png";
-
-        pipeNorth = new Image();
-        pipeNorth.src = "images/pipeNorth.png";
-
-        pipeSouth = new Image();
-        pipeSouth.src = "images/pipeSouth.png";
-        */
     }
 
-    // Load images
-    function loadImages(imagefiles) {
-        // Initialize variables
-        loadcount = 0;
-        loadtotal = imagefiles.length;
-        preloaded = false;
-        
-        // Load the images
-        var loadedimages = [];
-        for (var i=0; i<imagefiles.length; i++) {
-            // Create the image object
-            var image = new Image();
-            
-            // Add onload event handler
-            image.onload = function (inEvent: Event) {
-                loadcount++;
 
-                if (loadcount == loadtotal) {
-                    // Done loading
-                    preloaded = true;
-                }
-            };
-            
-            // Set the source url of the image
-            image.src = imagefiles[i];
-            
-            // Save to the image array
-            loadedimages[i] = image;
-        }
-        
-        // Return an array of images
-        return loadedimages;
-    }
-    
     // some variables
 
     var gap: number = 85;
@@ -222,7 +148,6 @@ window.onload = function() {
         }
     }
 
-
     // pipe coordinates
     class PipePoint
     {
@@ -236,34 +161,67 @@ window.onload = function() {
         }
     }
 
-    var pipe: Array<PipePoint> = [];
+    var pipe: Array<PipePoint> = [
+        { x : cvs.width / 2, y : 0 },
+        { x : cvs.width / 1, y : 0 }
+    ];
 
-    pipe[0] = {
-        x : cvs.width / 2,
-        y : 0
-    };
+    /*
+     *  getImage
+     *
+     * Returns the image from list of images if exists else NULL
+     */
+    function getImage( inImageID: number )
+    {
+        var imageReturned = null;
 
-    pipe[1] = {
-        x : cvs.width / 1,
-        y : 0
-    };
+        if (inImageID >= 0 && inImageID <= imageEnums.kMAX_IMAGES)
+        {
+            imageReturned = imageInfoArray[ inImageID ].cimage.getImage();
+        }
+        
+        return imageReturned;
+    }
 
-    // draw images
+    /*
+     *  drawImage
+     *  
+     * Given a context, image id and x & y draw the image.
+     */
+    function drawImage( inCTX: CanvasRenderingContext2D, inImageID: number, inX: number, inY: number)
+    {
+        var imageToDraw = getImage( inImageID );
 
+        if (imageToDraw != null)
+            inCTX.drawImage( imageToDraw, inX, inY );
+    }
+
+    /*
+     * draw()
+     *
+     * Main draw routine.
+     */
     function draw()
     {    
+        var fg: HTMLImageElement = getImage( imageEnums.kFOREGROUND );
+        var bg: HTMLImageElement = getImage( imageEnums.kBACKGROUND );
+        var pipeNorth: HTMLImageElement = getImage( imageEnums.kPIPENORTH );
+        var pipeSouth: HTMLImageElement = getImage( imageEnums.kPIPESOUTH );
+        var bird: HTMLImageElement = getImage( imageEnums.kBIRD );
+
         if (!pauseGame && preloaded)
         {
-            for( var i = 0; i < cvs.width; i+= cbg.getImage().width)
+            for( var i = 0; i < cvs.width; i+= bg.width)
+            {
                 ctx.drawImage(bg,i,0);
-            
+            }
             
             for(var i = 0; i < pipe.length; i++){
                 
                 constant = pipeNorth.height+gap;
                 ctx.drawImage(pipeNorth,pipe[i].x,pipe[i].y);
                 ctx.drawImage(pipeSouth,pipe[i].x,pipe[i].y+constant);
-                    
+
                 pipe[i].x--;
                 
                 if( pipe[i].x == (cvs.width / 2))    // was 125 -- NOTE -- need to make these dynamic on the window size...
@@ -276,7 +234,7 @@ window.onload = function() {
 
                 // detect collision
                 
-                var birdWidth = bird.width;
+                var birdWidth: number = bird.width;
 
                 if( bX + birdWidth >= pipe[i].x && bX <= pipe[i].x + pipeNorth.width && (bY <= pipe[i].y + pipeNorth.height || bY+bird.height >= pipe[i].y+constant) || bY + bird.height >=  cvs.height - fg.height){
                     location.reload(); // reload the page
@@ -296,8 +254,10 @@ window.onload = function() {
                 pipe.shift();
 
             for( var i = 0; i < cvs.width; i += fg.width )
+            {
                 ctx.drawImage(fg,i,cvs.height - fg.height);
-            
+            }
+
             ctx.drawImage(bird,bX,bY);
             
             bY += gravity;
@@ -311,9 +271,7 @@ window.onload = function() {
 
     }
 
-    // images = loadImages(imageNames);
-    
-    loadIndividualImages();
+    loadImages();
 
     draw();
 }
