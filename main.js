@@ -73,6 +73,12 @@ window.onload = function () {
     var loadcount = 0;
     var loadtotal = imageInfoArray.length;
     var preloaded = false;
+    /*
+     * checkLoaded()
+     *
+     * Checks to make sure that all the `onload` callbacks have been called so that
+     * we can ensure that resources are loaded.
+     */
     function checkLoaded() {
         loadcount++;
         if (loadcount == loadtotal) {
@@ -107,7 +113,7 @@ window.onload = function () {
     var fly = new Audio();
     var scor = new Audio();
     fly.src = "sounds/fly.mp3";
-    scor.src = "sounds/vo_ben_whoopy_02.wav"; // "sounds/score.mp3";
+    scor.src = "sounds/score.mp3";
     // on key down
     // document.addEventListener("keydown",moveUp);
     function moveUp() {

@@ -100,7 +100,7 @@ window.onload = function() {
     var scor: HTMLAudioElement = new Audio();
 
     fly.src = "sounds/fly.mp3";
-    scor.src = "sounds/vo_ben_whoopy_02.wav";   // "sounds/score.mp3";
+    scor.src = "sounds/score.mp3";
 
     // on key down
 
