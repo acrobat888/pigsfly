@@ -5,6 +5,8 @@
 //  Lots of help from Sadie's dad...
 //  --------
 
+// When compiling one file, this needs to be removed
+// import { CImages } from './cimages'
 
 // The function gets called when the window is fully loaded
 window.onload = function() {
@@ -37,60 +39,13 @@ window.onload = function() {
     var loadtotal = imageNames.length;
     var preloaded = false;
     
-    // load images
-    // ImageClass
-    class CImages
+    function checkLoaded()
     {
-        name: string = null;
-        file: string = null;
-        image: HTMLImageElement = null;
-        loaded: boolean = false;
+        loadcount++;
 
-        constructor(inName: string, inFile: string)
-        {
-            this.name = inName;
-            this.file = inFile;
-        }
-
-        load()
-        {
-            this.image = new Image();
-            var self = this;
-
-            // Add onload event handler
-            this.image.onload = function() {
-                console.log(self.name + " was loaded");
-                self.loaded = true;
-
-                // Done loading
-                // this.loaded = true;
-                /*
-                var tgt: HTMLImageElement = (that.target as HTMLImageElement);
-                var str = tgt.src;
-
-                console.log( tgt );
-
-                if (str.endsWith("images/bird.png"))
-                    console.log("Found a bird");
-
-                // check to see if the object isn't loaded, if so, mark it loaded
-                */
-                loadcount++;
-
-                if (loadcount == loadtotal) {
-                    // Done loading
-                    preloaded = true;
-                }
-
-                return true;
-            };
-
-            this.image.src = this.file;
-        }
-
-        getImage()
-        {
-            return this.image;
+        if (loadcount == loadtotal) {
+            // Done loading
+            preloaded = true;
         }
     }
 
@@ -98,7 +53,7 @@ window.onload = function() {
     {
         if (cbg == null)
         {
-            cbg = new CImages( "bg", "images/bg.png")
+            cbg = new CImages( "bg", "images/bg.png", checkLoaded)
             if (cbg != null)
             {
                 cbg.load();
@@ -108,7 +63,7 @@ window.onload = function() {
                 
         if (cfg == null)
         {
-            cfg = new CImages( "fg", "images/fg.png")
+            cfg = new CImages( "fg", "images/fg.png", checkLoaded)
             if (cfg != null)
             {
                 cfg.load();
@@ -118,7 +73,7 @@ window.onload = function() {
 
         if (cbird == null)
         {
-            cbird = new CImages( "bird", "images/bird.png");
+            cbird = new CImages( "bird", "images/bird.png", checkLoaded);
             if (cbird != null)
             {
                 cbird.load();
@@ -128,7 +83,7 @@ window.onload = function() {
 
         if (cpipeNorth == null)
         {
-            cpipeNorth = new CImages( "pipeNorth", "images/pipeNorth.png");
+            cpipeNorth = new CImages( "pipeNorth", "images/pipeNorth.png", checkLoaded);
             if(cpipeNorth != null)
             {
                 cpipeNorth.load();
@@ -138,7 +93,7 @@ window.onload = function() {
 
         if (cpipeSouth == null)
         {
-            cpipeSouth = new CImages( "pipeSouth", "images/pipeSouth.png");
+            cpipeSouth = new CImages( "pipeSouth", "images/pipeSouth.png", checkLoaded);
             if(cpipeSouth != null)
             {
                 cpipeSouth.load();
