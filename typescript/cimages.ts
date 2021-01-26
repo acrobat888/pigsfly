@@ -36,6 +36,10 @@ class CImages
             return true;
         };
 
+        this.image.onerror = function() {
+            console.log( "Error occurred with " + self.name);
+        };
+
         this.image.src = this.file;
     }
 
