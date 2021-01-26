@@ -95,35 +95,40 @@ window.onload = function() {
     var pauseGame: boolean = false;
 
     // audio files
+    var flySnd: HTMLAudioElement = null;
+    var scoreSnd: HTMLAudioElement = null;
 
-    var fly: HTMLAudioElement = new Audio();
-    var scor: HTMLAudioElement = new Audio();
+    function loadSounds()
+    {
+        flySnd = new Audio();
+        flySnd.src = "sounds/fly.mp3";
 
-    fly.src = "sounds/fly.mp3";
-    scor.src = "sounds/score.mp3";
-
+        scoreSnd = new Audio();
+        scoreSnd.src = "sounds/score.mp3";
+    
+    }
     // on key down
 
     // document.addEventListener("keydown",moveUp);
 
     function moveUp() {
         bY -= 25;
-        fly.play();
+        flySnd.play();
     }
 
     function moveDown() {
         bY += 25;
-        fly.play();
+        flySnd.play();
     }
 
     function moveLeft() {
         bX -= 25;
-        fly.play();
+        flySnd.play();
     }
 
     function moveRight() {
         bX += 25;
-        fly.play();
+        flySnd.play();
     }
 
     document.addEventListener("keydown",direction);
@@ -201,7 +206,7 @@ window.onload = function() {
      *
      * Main draw routine.
      */
-    function draw()
+    function drawGame()
     {    
         var fg: HTMLImageElement = getImage( imageEnums.kFOREGROUND );
         var bg: HTMLImageElement = getImage( imageEnums.kBACKGROUND );
@@ -236,13 +241,14 @@ window.onload = function() {
                 
                 var birdWidth: number = bird.width;
 
-                if( bX + birdWidth >= pipe[i].x && bX <= pipe[i].x + pipeNorth.width && (bY <= pipe[i].y + pipeNorth.height || bY+bird.height >= pipe[i].y+constant) || bY + bird.height >=  cvs.height - fg.height){
+                if( bX + birdWidth >= pipe[i].x && bX <= pipe[i].x + pipeNorth.width && (bY <= pipe[i].y + pipeNorth.height || bY+bird.height >= pipe[i].y+constant) || bY + bird.height >=  cvs.height - fg.height)
+                {
                     location.reload(); // reload the page
                 }
                 
                 if(pipe[i].x == 5){
                     score++;
-                    scor.play();
+                    scoreSnd.play();
                     
                     if (score > 5){
                         level++;
@@ -267,13 +273,92 @@ window.onload = function() {
         ctx.font = "20px Verdana";
         ctx.fillText("Score : "+score,10,cvs.height-80);
         ctx.fillText("Level : "+level,10,cvs.height-20);    
-        requestAnimationFrame(draw);
 
     }
 
-    loadImages();
+    // game level stuff
+    interface GameLevelInf {
+        levelNo: number;
+        levelName: string;
+        drawFunction;
+    };
 
-    draw();
+    enum gameLevelEnums {
+        kSplashScreen,
+        kLevel1,
+        kLevel2,
+        kCredits
+    };
+
+    var gameLevels: Array<GameLevelInf> = [
+        { levelNo: gameLevelEnums.kSplashScreen, levelName: "Splash", drawFunction: drawSplash },
+        { levelNo: gameLevelEnums.kLevel1, levelName: "Level 1", drawFunction: drawGame },
+        { levelNo: gameLevelEnums.kLevel2, levelName: "Level 2", drawFunction: drawGame },
+        { levelNo: gameLevelEnums.kCredits, levelName: "Credits", drawFunction: drawCredits }
+    ]
+
+    var currentLevel: number = gameLevelEnums.kSplashScreen;
+
+    /*
+     * drawSplash
+     *  
+     * Draws the splash screen.
+     */
+    function drawSplash()
+    {
+        var bg: HTMLImageElement = getImage( imageEnums.kBACKGROUND );
+
+        if (preloaded)
+        {
+            for( var i = 0; i < cvs.width; i+= bg.width)
+            {
+                ctx.drawImage(bg,i,0);
+            }
+
+        }
+
+        // Did they hit the space bar?
+        // If so, switch to the next level
+        if (pauseGame)
+        {
+            pauseGame = !pauseGame;
+            currentLevel++;
+        }
+
+        ctx.fillStyle = "#000";
+        ctx.font = "20px Verdana";
+        ctx.fillText("Splash Screen", cvs.width / 2, cvs.height  / 2);
+        ctx.fillText("Hit `space bar` to start game", cvs.width / 2, cvs.height  / 2 - 40);
+    }
+
+    function drawCredits()
+    {
+
+    }
+
+    function init()
+    {
+        loadImages();
+        loadSounds();
+    }
+
+    var lastframe: number = 0;
+
+    function main( tframe:number )
+    {
+        var whichLevel: GameLevelInf = gameLevels[ currentLevel ];
+        var delta: number = (tframe - lastframe) / 1000;
+        lastframe = tframe;
+
+        window.requestAnimationFrame( main );
+
+        whichLevel.drawFunction();
+
+        console.log("Delta = " + delta + "\n");
+    }
+
+    init();
+    main(0);
 }
 
 
