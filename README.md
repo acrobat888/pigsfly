@@ -13,3 +13,4 @@ here:  https://www.typescriptlang.org/#installation
 Change to the typescript directory and type tsc.
 This should compile a new file called:  _main.js_
 
+walker was here
