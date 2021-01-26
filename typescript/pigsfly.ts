@@ -244,7 +244,7 @@ window.onload = function() {
                     score++;
                     scor.play();
                     
-                    if (score > 5){
+                    if (((score % 5) == 0) && (level >= 1)) {
                         level++;
                     }
                 }

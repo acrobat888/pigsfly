@@ -226,7 +226,7 @@ window.onload = function () {
                 if (pipe[i].x == 5) {
                     score++;
                     scor.play();
-                    if (score > 5) {
+                    if (((score % 5) == 0) && (level >= 1)) {
                         level++;
                     }
                 }
